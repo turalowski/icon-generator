@@ -74,7 +74,7 @@ const Generate: NextPage = () => {
           width={100}
           height={100}
           alt="An image of generated prompt"
-          src={`data:image/png;base64,${imageUrl}`}
+          src={imageUrl}
         />
       </main>
     </>

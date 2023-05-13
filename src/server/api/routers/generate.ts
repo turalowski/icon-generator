@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { Configuration, OpenAIApi } from "openai";
 import { env } from "~/env.mjs";
 import { base64 } from "data/base64";
 import AWS from "aws-sdk";
+
+const S3_BUCKET_NAME = "icon-generator-app";
 
 const s3 = new AWS.S3({
   credentials: {
@@ -80,7 +82,7 @@ export const generateRouter = createTRPCRouter({
 
       await s3
         .putObject({
-          Bucket: "icon-generator-app",
+          Bucket: S3_BUCKET_NAME,
           Body: Buffer.from(base64EncodedImage!, "base64"),
           Key: icon.id,
           ContentEncoding: "base64",
@@ -91,8 +93,7 @@ export const generateRouter = createTRPCRouter({
       // Save image to S3 bucket
 
       return {
-        imageUrl: base64EncodedImage,
-        message: "success",
+        imageUrl: `https://${S3_BUCKET_NAME}.s3.eu-west-2.amazonaws.com/${icon.id}`,
       };
     }),
 });
