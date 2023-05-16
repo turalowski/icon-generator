@@ -18,15 +18,15 @@ const colors = [
 ];
 
 const Generate: NextPage = () => {
+  const [imageUrl, setImageUrl] = useState("");
+
   const [form, setForm] = useState({
     prompt: "",
     color: "",
   });
-  const [imageUrl, setImageUrl] = useState("");
 
   const generateIcon = api.generate.generateIcon.useMutation({
     onSuccess(data) {
-      console.log("Mutation finished", data.imageUrl);
       if (!data.imageUrl) return;
       setImageUrl(data.imageUrl);
     },
@@ -41,7 +41,7 @@ const Generate: NextPage = () => {
     };
   }
 
-  async function onSubmit(event: React.FormEvent) {
+  async function onSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     await generateIcon.mutateAsync(form);
     setForm((prevForm) => ({ ...prevForm, prompt: "" }));
@@ -75,7 +75,9 @@ const Generate: NextPage = () => {
                   type="radio"
                   name="color"
                   checked={color === form.color}
-                  onChange={() => setForm((prev) => ({ ...prev, color }))}
+                  onChange={() => {
+                    setForm((prev) => ({ ...prev, color }));
+                  }}
                   value={color}
                 />
                 {color}
