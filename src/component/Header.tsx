@@ -3,6 +3,7 @@ import { PrimaryLink } from "./PrimaryLink";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "./Button";
 import { useBuyCredits } from "~/hooks";
+import { api } from "~/utils/api";
 
 export function Header() {
   const session = useSession();
@@ -10,6 +11,8 @@ export function Header() {
   const { buyCredits } = useBuyCredits();
 
   const isLoggedIn = !!session.data;
+
+  const credits = api.user.getCredits.useQuery();
 
   return (
     <header
@@ -25,6 +28,10 @@ export function Header() {
         <li>
           <PrimaryLink href="/generate">Generate</PrimaryLink>
         </li>
+        <li>
+          <PrimaryLink href="/community">Community</PrimaryLink>
+        </li>
+
         {isLoggedIn && (
           <li>
             <PrimaryLink href="/collection">Collection</PrimaryLink>
@@ -34,6 +41,9 @@ export function Header() {
       <ul className="flex gap-4">
         {isLoggedIn ? (
           <>
+            <div className="flex items-center">
+              Credits remaining: {credits.data}
+            </div>
             <li>
               <Button
                 onClick={() => {

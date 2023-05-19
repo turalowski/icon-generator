@@ -6,6 +6,8 @@ import { useState } from "react";
 import { api } from "~/utils/api";
 import Image from "next/image";
 
+const shapes = ["square", "rounded", "circle"];
+
 const colors = [
   "blue",
   "red",
@@ -18,17 +20,18 @@ const colors = [
 ];
 
 const Generate: NextPage = () => {
-  const [imageUrl, setImageUrl] = useState("");
+  const [imagesUrl, setImagesUrl] = useState<{ imageUrl: string }[]>([]);
 
   const [form, setForm] = useState({
     prompt: "",
     color: "",
+    numberOfIcons: "1",
+    shape: "",
   });
 
   const generateIcon = api.generate.generateIcon.useMutation({
     onSuccess(data) {
-      if (!data.imageUrl) return;
-      setImageUrl(data.imageUrl);
+      setImagesUrl(data);
     },
   });
 
@@ -43,7 +46,10 @@ const Generate: NextPage = () => {
 
   async function onSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
-    await generateIcon.mutateAsync(form);
+    await generateIcon.mutateAsync({
+      ...form,
+      numberOfIcons: parseInt(form.numberOfIcons),
+    });
     setForm((prevForm) => ({ ...prevForm, prompt: "" }));
   }
 
@@ -65,24 +71,56 @@ const Generate: NextPage = () => {
           </h2>
           <FormGroup className="mb-12">
             <label>Prompt</label>
-            <Input value={form.prompt} onChange={updateForm("prompt")} />
+            <Input
+              required
+              value={form.prompt}
+              onChange={updateForm("prompt")}
+            />
           </FormGroup>
           <h2 className="text-xl">2. Pick your icon color</h2>
           <FormGroup className="mb-12 grid grid-cols-4">
             {colors.map((color) => (
               <label key={color} className="flex gap-2 text-xl">
                 <input
+                  required
                   type="radio"
                   name="color"
                   checked={color === form.color}
-                  onChange={() => {
-                    setForm((prev) => ({ ...prev, color }));
-                  }}
+                  onChange={updateForm("color")}
                   value={color}
                 />
                 {color}
               </label>
             ))}
+          </FormGroup>
+          <h2 className="text-xl">3. Pick your icon shape</h2>
+          <FormGroup className="mb-12 grid grid-cols-4">
+            {shapes.map((shape) => (
+              <label key={shape} className="flex gap-2 text-xl">
+                <input
+                  required
+                  type="radio"
+                  name="shape"
+                  checked={shape === form.shape}
+                  onChange={updateForm("shape")}
+                  value={shape}
+                />
+                {shape}
+              </label>
+            ))}
+          </FormGroup>
+          <h2 className="text-xl">4. How many do you want?</h2>
+          <FormGroup className="mb-12">
+            <label className="flex gap-2 text-xl">
+              How many icons do you want to generate in a single batch?
+            </label>
+            <Input
+              required
+              value={form.numberOfIcons}
+              onChange={updateForm("numberOfIcons")}
+              inputMode="numeric"
+              pattern="[1-9]|10"
+            />
           </FormGroup>
           <Button
             isLoading={generateIcon.isLoading}
@@ -92,20 +130,22 @@ const Generate: NextPage = () => {
             Submit
           </Button>
         </form>
-        {!!imageUrl && (
-          <>
-            <h2 className="text-xl">Your icons</h2>
-            <section className="grid grid-cols-4 gap-4">
-              <Image
-                width={200}
-                height={200}
-                alt="An image of generated prompt"
-                src={imageUrl}
-                className="mb-12 w-full"
-              />
-            </section>
-          </>
-        )}
+        <h2 className="text-xl">Your icons</h2>
+        <section className="mb-12 grid grid-cols-4 gap-4">
+          {imagesUrl.length > 0 &&
+            imagesUrl.map(({ imageUrl }) => (
+              <>
+                <Image
+                  key={imageUrl}
+                  width={512}
+                  height={512}
+                  alt="An image of generated prompt"
+                  src={imageUrl}
+                  className="mb-12 w-full"
+                />
+              </>
+            ))}
+        </section>
       </main>
     </>
   );

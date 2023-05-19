@@ -11,6 +11,7 @@ const config = {
     domains: [
       "icon-generator-app.s3.eu-west-2.amazonaws.com",
       "oaidalleapiprodscus.blob.core.windows.net",
+      "icon-generator-app.s3.amazonaws.com",
     ],
   },
   /**
