@@ -19,6 +19,13 @@ const colors = [
   "black",
 ];
 
+const styles = [
+  "claymorphic",
+  "3d rendered",
+  "pixelated",
+  "illustreated with color penciled",
+];
+
 const Generate: NextPage = () => {
   const [imagesUrl, setImagesUrl] = useState<{ imageUrl: string }[]>([]);
 
@@ -27,11 +34,17 @@ const Generate: NextPage = () => {
     color: "",
     numberOfIcons: "1",
     shape: "",
+    style: "",
   });
+
+  const [error, setError] = useState("");
 
   const generateIcon = api.generate.generateIcon.useMutation({
     onSuccess(data) {
       setImagesUrl(data);
+    },
+    onError(error) {
+      setError(error.message);
     },
   });
 
@@ -46,6 +59,7 @@ const Generate: NextPage = () => {
 
   async function onSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
+    setError("");
     await generateIcon.mutateAsync({
       ...form,
       numberOfIcons: parseInt(form.numberOfIcons),
@@ -109,7 +123,24 @@ const Generate: NextPage = () => {
               </label>
             ))}
           </FormGroup>
-          <h2 className="text-xl">4. How many do you want?</h2>
+          <h2 className="text-xl">4. Pick your icon style</h2>
+          <FormGroup className="mb-12 grid grid-cols-4">
+            {styles.map((style) => (
+              <label key={style} className="flex gap-2 text-xl">
+                <input
+                  required
+                  type="radio"
+                  name="style"
+                  checked={style === form.style}
+                  onChange={updateForm("style")}
+                  value={style}
+                />
+                {style}
+              </label>
+            ))}
+          </FormGroup>
+
+          <h2 className="text-xl">5. How many do you want?</h2>
           <FormGroup className="mb-12">
             <label className="flex gap-2 text-xl">
               How many icons do you want to generate in a single batch?
@@ -122,6 +153,9 @@ const Generate: NextPage = () => {
               pattern="[1-9]|10"
             />
           </FormGroup>
+          {error && (
+            <div className="bg-red-500 p-8 text-lg text-white">{error}</div>
+          )}
           <Button
             isLoading={generateIcon.isLoading}
             disabled={generateIcon.isLoading}
